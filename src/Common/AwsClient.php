@@ -6,8 +6,6 @@ use Aws\Sdk;
 use Aws\Common\Api\Service;
 use Aws\Common\Credentials\CredentialsInterface;
 use Aws\Common\Signature\SignatureInterface;
-use Aws\Common\Waiter\ResourceWaiter;
-use Aws\Common\Waiter\Waiter;
 use GuzzleHttp\Command\AbstractClient;
 use GuzzleHttp\Command\Command;
 use GuzzleHttp\Command\CommandInterface;
@@ -228,16 +226,12 @@ class AwsClient extends AbstractClient implements AwsClientInterface
     {
         $config += $this->api->getWaiterConfig($name);
 
-        return new ResourceWaiter($this, $name, $args, $config);
+        return new Waiter($this, $name, $args, $config);
     }
 
     public function waitUntil($name, array $args = [], array $config = [])
     {
-        $waiter = is_callable($name)
-            ? new Waiter($name, $config + $args)
-            : $this->getWaiter($name, $args, $config);
-
-        $waiter->wait();
+        $this->getWaiter($name, $args, $config)->wait();
     }
 
     /**

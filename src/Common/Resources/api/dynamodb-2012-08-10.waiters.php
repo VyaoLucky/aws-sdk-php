@@ -1,25 +1,50 @@
-<?php return [
+<?php
+return [
+  'version' => 2,
   'waiters' => [
-    '__default__' => [
-      'interval' => 20,
-      'max_attempts' => 25,
-    ],
-    '__TableState' => [
-      'operation' => 'DescribeTable',
-    ],
-    'TableExists' => [
-      'extends' => '__TableState',
-      'ignore_errors' => [
-        'ResourceNotFoundException',
+  'TableExists' =>
+  [
+    'description' => 'Wait until a table exists and can be accessed',
+    'operation' => 'DescribeTable',
+    'delay' => 5,
+    'maxAttempts' => 40,
+    'acceptors' =>
+    [
+      0 =>
+      [
+        'state' => 'success',
+        'matcher' => 'path',
+        'argument' => 'Table.TableStatus',
+        'expected' => 'ACTIVE',
       ],
-      'success_type' => 'output',
-      'success_path' => 'Table.TableStatus',
-      'success_value' => 'ACTIVE',
+      1 =>
+      [
+        'state' => 'retry',
+        'matcher' => 'error',
+        'expected' => 'ResourceNotFoundException',
+      ],
     ],
-    'TableNotExists' => [
-      'extends' => '__TableState',
-      'success_type' => 'error',
-      'success_value' => 'ResourceNotFoundException',
+  ],
+  'TableNotExists' =>
+  [
+    'operation' => 'DescribeTable',
+    'delay' => 5,
+    'maxAttempts' => 40,
+    'acceptors' =>
+    [
+      0 =>
+      [
+        'state' => 'success',
+        'matcher' => 'error',
+        'expected' => 'ResourceNotFoundException',
+      ],
+      1 =>
+      [
+        'state' => 'retry',
+        'matcher' => 'status',
+        'expected' => 200,
+      ],
     ],
+  ],
   ],
 ];
